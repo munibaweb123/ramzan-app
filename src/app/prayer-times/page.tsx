@@ -12,14 +12,26 @@ type PrayerTimings = {
   Isha: string;
 };
 
-type PrayerDay = {
-  date: string; // Gregorian Date (e.g., "02-03-2025")
-  hijriDate: string; // Hijri Date (e.g., "1 Ramadan 1446")
+type HijriDate = {
+  day: string;
+  month: { number: number; en: string };
+  year: string;
+};
+
+type GregorianDate = {
+  date: string;
+};
+
+type ApiResponse = {
+  date: {
+    hijri: HijriDate;
+    gregorian: GregorianDate;
+  };
   timings: PrayerTimings;
 };
 
 export default function PrayerTimes() {
-  const [prayerTimes, setPrayerTimes] = useState<PrayerDay[]>([]);
+  const [prayerTimes, setPrayerTimes] = useState<ApiResponse[]>([]);
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -31,21 +43,9 @@ export default function PrayerTimes() {
       const data = await response.json();
 
       if (data.data) {
-        // Filter only Ramzan days (Hijri month = 9)
-        const timingsArray = data.data
-          .filter((day: any) => day.date.hijri.month.number === 9)
-          .map((day: any) => ({
-            date: day.date.gregorian.date, // "02-03-2025"
-            hijriDate: `${day.date.hijri.day} Ramadan ${day.date.hijri.year}`, // "1 Ramadan 1446"
-            timings: {
-              Fajr: day.timings.Fajr.split(" ")[0],
-              Dhuhr: day.timings.Dhuhr.split(" ")[0],
-              Asr: day.timings.Asr.split(" ")[0],
-              Maghrib: day.timings.Maghrib.split(" ")[0], // Iftar time
-              Isha: day.timings.Isha.split(" ")[0],
-            },
-          }));
-
+        const timingsArray: ApiResponse[] = data.data.filter(
+          (day: ApiResponse) => day.date.hijri.month.number === 9
+        );
         setPrayerTimes(timingsArray);
       }
     };
@@ -55,7 +55,6 @@ export default function PrayerTimes() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 to-gray-900 text-white p-6">
-      {/* Animated Heading */}
       <motion.h1
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,7 +80,10 @@ export default function PrayerTimes() {
             >
               <Card className="p-4 bg-white text-gray-800 shadow-lg rounded-xl border border-gray-300">
                 <h2 className="text-lg font-semibold text-gray-900 text-center">
-                  {day.date} <span className="text-blue-600">({day.hijriDate})</span>
+                  {day.date.gregorian.date}{" "}
+                  <span className="text-blue-600">
+                    ({day.date.hijri.day} Ramadan {day.date.hijri.year})
+                  </span>
                 </h2>
                 <CardContent className="mt-4 space-y-2">
                   <div className="flex justify-between">
