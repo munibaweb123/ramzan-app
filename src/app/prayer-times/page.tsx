@@ -5,8 +5,17 @@ import { getPrayerTimes } from "../utils/fetchPrayerTimes";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
-export default function PrayerTimes() {
-  const [timings, setTimings] = useState<any>(null);
+type PrayerTimings = {
+    Fajr: string;
+    Dhuhr: string;
+    Asr: string;
+    Maghrib: string;
+    Isha: string;
+    [key: string]: string; // Allow additional keys (optional)
+  };
+  
+  export default function PrayerTimes() {
+    const [timings, setTimings] = useState<PrayerTimings | null>(null);
 
   useEffect(() => {
     getPrayerTimes("Karachi", "Pakistan").then(setTimings);
